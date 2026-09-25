@@ -1,0 +1,27 @@
+name: cygwin
+
+on: [push]
+
+jobs:
+  cygwin:
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf input
+      - uses: actions/checkout@v7
+      - name: Cygwin setup
+        uses: cygwin/cygwin-install-action@v6
+        with:
+          packages: |
+            gcc-g++
+            libsqlite3-devel
+            make
+            zip
+            zlib-devel
+      - run: make install PREFIX="$PWD/tippecanoe" CXXFLAGS="-D_GNU_SOURCE"
+      - run: mv -t tippecanoe D:/cygwin/bin/cyggcc_s-seh-1.dll D:/cygwin/bin/cygiconv-2.dll D:/cygwin/bin/cygintl-8.dll D:/cygwin/bin/cygsqlite3-0.dll D:/cygwin/bin/cygstdc++-6.dll D:/cygwin/bin/cygwin1.dll D:/cygwin/bin/cygz.dll
+      - run: zip tippecanoe.zip tippecanoe
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        if: github.ref_type == 'tag'
+        with:
+          files: tippecanoe.zip
